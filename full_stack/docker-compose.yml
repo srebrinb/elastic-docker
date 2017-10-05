@@ -19,7 +19,7 @@ services:
         hard: -1
     volumes:
       - ./config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/elasticsearch.yml
-      - ./esdata:/usr/share/elasticsearch/data
+      - esdata:/usr/share/elasticsearch/data
     ports: ['9200:9200']
     healthcheck:
       test: ["CMD", "curl","-s" ,"-f", "-u", "elastic:${ES_PASSWORD}", "http://localhost:9200/_cat/health"]
@@ -74,9 +74,9 @@ services:
       #Mount the MySQL logs into the Filebeat container so we can access and and index them using the Filebeat MySQL module.
       - ./logs/mysql/:/var/log/mysql/
       #Mount the hosts system log directory. This represents the logs of the VM hosting docker. Consumed by the Filebeat system module.
-      - /private/var/log/:/var/log/host/:ro
+      - ./private/var/log/:/var/log/host/:ro
       #Mount the Docker logs for indexing by the custom prospector ./config/filebeat/prospectors.d.
-      - /var/lib/docker/containers:/hostfs/var/lib/docker/containers
+      - ./var/lib/docker/containers:/hostfs/var/lib/docker/containers
       #Named volume fsdata. This is used to persist the registry file between restarts, so to avoid data duplication.
       - filebeatdata:/usr/share/filebeat/data/
     networks: ['stack']
@@ -97,10 +97,10 @@ services:
       #Mount the modules.d directory into the container. This allows user to potentially make changes to the modules and they will be dynamically loaded.
       - ./config/beats/metricbeat/modules.d/:/usr/share/metricbeat/modules.d/
       #The commented sections below enable Metricbeat to monitor the Docker host rather than the Metricbeat container. These are used by the system module.
-      - /proc:/hostfs/proc:ro
-      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+     # - ./proc:/hostfs/proc:ro
+     # - ./sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
       #Allows us to report on docker from the hosts information.
-      - /var/run/docker.sock:/var/run/docker.sock
+     # - ./var/run/docker.sock:/var/run/docker.sock
       #We mount the host filesystem so we can report on disk usage with the system module.
       - ./hostfs:/hostfs:ro
     command: metricbeat -e -system.hostfs=/hostfs -E output.elasticsearch.username=elastic -E output.elasticsearch.password=${ES_PASSWORD} -strict.perms=false
