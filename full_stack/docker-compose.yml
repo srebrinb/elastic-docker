@@ -19,7 +19,7 @@ services:
         hard: -1
     volumes:
       - ./config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/elasticsearch.yml
-      - esdata:/usr/share/elasticsearch/data
+      - ./esdata:/usr/share/elasticsearch/data
     ports: ['9200:9200']
     healthcheck:
       test: ["CMD", "curl","-s" ,"-f", "-u", "elastic:${ES_PASSWORD}", "http://localhost:9200/_cat/health"]
@@ -102,7 +102,7 @@ services:
       #Allows us to report on docker from the hosts information.
       - /var/run/docker.sock:/var/run/docker.sock
       #We mount the host filesystem so we can report on disk usage with the system module.
-      - /:/hostfs:ro
+      - ./hostfs:/hostfs:ro
     command: metricbeat -e -system.hostfs=/hostfs -E output.elasticsearch.username=elastic -E output.elasticsearch.password=${ES_PASSWORD} -strict.perms=false
     networks: ['stack']
     restart: on-failure
@@ -132,7 +132,7 @@ services:
   nginx:
     container_name: nginx
     hostname: nginx
-    build: ${PWD}/config/nginx
+    build: ./config/nginx
     networks: ['stack']
     #Expose port 80 to allow users to hit content and generate data for filebeat and packetbeat.
     ports: ['80:80']
@@ -145,7 +145,7 @@ services:
   mysql:
     container_name: mysql
     hostname: mysql
-    build: ${PWD}/config/mysql
+    build: ./config/mysql
     environment:
       - "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}"
     networks: ['stack']
